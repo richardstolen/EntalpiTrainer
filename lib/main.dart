@@ -52,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _numberOfMessagesReceived = 0;
 
   late TacxTrainerControl trainer;
-
+  // Test
   @override
   void initState() {
     super.initState();
