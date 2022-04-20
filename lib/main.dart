@@ -1,17 +1,18 @@
 import 'dart:async';
-import 'dart:typed_data';
+import 'dart:io';
+
 import 'package:entalpitrainer/tacx_trainer_control.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-
 import 'package:location_permissions/location_permissions.dart';
-import 'dart:io';
 
 final Uuid _UART_UUID = Uuid.parse('6e40fec1-b5a3-f393-e0a9-e50e24dcca9e');
 final Uuid _UART_RX = Uuid.parse('6e40fec3-b5a3-f393-e0a9-e50e24dcca9e');
 final Uuid _UART_TX = Uuid.parse('6e40fec2-b5a3-f393-e0a9-e50e24dcca9e');
 
-void main() => runApp(MyApp());
+void main() => runApp(
+    //MaterialApp(initialRoute: '/', onGenerateRoute: RouteGenerator.generateRoute,);
+    MyApp());
 
 class MyApp extends StatelessWidget {
   @override
@@ -22,13 +23,13 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter_reactive_ble UART example'),
+      home: const MyHomePage(title: 'Flutter_reactive_ble UART example'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
   final String title;
   @override
   _MyHomePageState createState() => _MyHomePageState();
