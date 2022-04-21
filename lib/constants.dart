@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 class EntalpiColors {
   static const Color deepPurple = Color(0xFF4A3383);
@@ -15,3 +16,7 @@ class EntalpiColors {
   static const Color almostWhite = Color(0xEEFFFFFF);
   static const Color white = Colors.white;
 }
+
+final Uuid uartUUID = Uuid.parse('6e40fec1-b5a3-f393-e0a9-e50e24dcca9e');
+final Uuid uartRX = Uuid.parse('6e40fec3-b5a3-f393-e0a9-e50e24dcca9e');
+final Uuid uartTX = Uuid.parse('6e40fec2-b5a3-f393-e0a9-e50e24dcca9e');
