@@ -26,7 +26,7 @@ class _SimpleWorkoutViewState extends State<SimpleWorkoutView> {
               minValue: 0,
               maxValue: 1500,
               axis: Axis.horizontal,
-              step: 10,
+              step: 2,
               value: _currentValue,
               selectedTextStyle:
                   const TextStyle(color: EntalpiColors.green, fontSize: 18),

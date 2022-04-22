@@ -1,12 +1,14 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:entalpitrainer/constants.dart';
-import 'package:entalpitrainer/views/bt_connect/connection_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:location_permissions/location_permissions.dart';
 
 import '../../tacx_trainer_control.dart';
 import '../../widgets/text_container_widget.dart';
+import 'connection_widgets.dart';
 
 class BTConnection extends StatefulWidget {
   const BTConnection({Key? key, required this.title}) : super(key: key);
@@ -14,6 +16,14 @@ class BTConnection extends StatefulWidget {
   @override
   _BTConnectionState createState() => _BTConnectionState();
 }
+
+// List<DiscoveredDevice> _foundBleUARTDevices = [];
+// late StreamSubscription<DiscoveredDevice> _scanStream;
+// late StreamSubscription<ConnectionStateUpdate> _connection;
+// List<String> dataLog = [];
+// bool _scanning = false;
+// bool _connected = false;
+// String _logTexts = "";
 
 class _BTConnectionState extends State<BTConnection> {
   FlutterReactiveBle flutterReactiveBle = FlutterReactiveBle();
@@ -35,6 +45,71 @@ class _BTConnectionState extends State<BTConnection> {
 
   void refreshScreen() {
     setState(() {});
+  }
+
+  Future<void> showNoPermissionDialog() async => showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('No location permission '),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text('No location permission granted.'),
+                Text('Location permission is required for BLE to function.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Acknowledge'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+      );
+
+  void _startScan() async {
+    bool goForIt = false;
+    PermissionStatus permission;
+    if (Platform.isAndroid) {
+      permission = await LocationPermissions().requestPermissions();
+      if (permission == PermissionStatus.granted) goForIt = true;
+    } else if (Platform.isIOS) {
+      goForIt = true;
+    }
+    if (goForIt) {
+      //TODO replace True with permission == PermissionStatus.granted is for IOS test
+      _foundBleUARTDevices = [];
+      _scanning = true;
+      refreshScreen();
+      _scanStream = flutterReactiveBle
+          .scanForDevices(withServices: [uartUUID]).listen((device) {
+        if (_foundBleUARTDevices.every((element) => element.id != device.id)) {
+          _foundBleUARTDevices.add(device);
+          refreshScreen();
+        }
+      }, onError: (Object error) {
+        _logTexts = "${_logTexts}ERROR while scanning:$error \n";
+        refreshScreen();
+      });
+    } else {
+      await showNoPermissionDialog();
+    }
+  }
+
+  void _disconnect() async {
+    await _connection.cancel();
+    _connected = false;
+    refreshScreen();
+  }
+
+  void _stopScan() async {
+    await _scanStream.cancel();
+    _scanning = false;
+    refreshScreen();
   }
 
   void onNewReceivedData(List<int> data) {
@@ -111,7 +186,6 @@ class _BTConnectionState extends State<BTConnection> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            const Text("Devices found:"),
             Container(
                 margin: const EdgeInsets.all(12.0),
                 decoration: BoxDecoration(
@@ -135,7 +209,7 @@ class _BTConnectionState extends State<BTConnection> {
                                   : onConnectDevice(index);
                             },
                             child: Container(
-                              width: 48,
+                              width: double.infinity,
                               height: 48,
                               padding:
                                   const EdgeInsets.symmetric(vertical: 4.0),
@@ -143,13 +217,55 @@ class _BTConnectionState extends State<BTConnection> {
                               child: const Icon(Icons.add_link),
                             ),
                           ),
+                          leading: const Text(
+                            "Devices found:",
+                            style: TextStyle(color: EntalpiColors.white),
+                          ),
                           subtitle: Text(_foundBleUARTDevices[index].id),
                           title: Text(
                               "$index: ${_foundBleUARTDevices[index].name}"),
                         )))),
             TextContainerWidget(data: [_logTexts], text: "Status messages:"),
             TextContainerWidget(text: "Received data:", data: _receivedData),
-            const ConnectionButtons()
+            ButtonBar(
+              alignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                ElevatedButton(
+                  style: buildButtonStyle(),
+                  onPressed: !_scanning && !_connected ? _startScan : () {},
+                  child: Icon(
+                    Icons.play_arrow,
+                    color: !_scanning && !_connected
+                        ? EntalpiColors.offBlack
+                        : EntalpiColors.offWhite54,
+                  ),
+                ),
+                ElevatedButton(
+                    style: buildButtonStyle(),
+                    onPressed: _scanning ? _stopScan : () {},
+                    child: Icon(
+                      Icons.stop,
+                      color: _scanning
+                          ? EntalpiColors.offBlack
+                          : EntalpiColors.offWhite54,
+                    )),
+                ElevatedButton(
+                    style: buildButtonStyle(),
+                    onPressed: _connected ? _disconnect : () {},
+                    child: Icon(
+                      Icons.cancel,
+                      color: _connected
+                          ? EntalpiColors.offBlack
+                          : EntalpiColors.offWhite54,
+                    )),
+              ],
+            ),
+            SizedBox(
+              height: 35,
+              child: ConectionStatusWidget(
+                  scanning: _scanning, connected: _connected),
+            ),
           ],
         ),
       );
