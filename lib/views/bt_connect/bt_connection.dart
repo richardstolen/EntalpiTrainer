@@ -162,7 +162,6 @@ class _BTConnectionState extends State<BTConnection> {
                 deviceId: event.deviceId);
             trainer = TacxTrainerControl(flutterReactiveBle);
             trainer.rxCharacteristic = _rxCharacteristic;
-            print(trainer.getRxCharacteristic);
             break;
           }
         case DeviceConnectionState.disconnecting:
@@ -209,7 +208,7 @@ class _BTConnectionState extends State<BTConnection> {
                                   : onConnectDevice(index);
                             },
                             child: Container(
-                              width: double.infinity,
+                              width: 100,
                               height: 48,
                               padding:
                                   const EdgeInsets.symmetric(vertical: 4.0),
