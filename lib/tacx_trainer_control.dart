@@ -87,8 +87,11 @@ class TacxTrainerControl {
     sendFecCmd(writeValue);
   }
 
-  String fecDataHandler(data) {
-    String returnData = "";
+  List<List<int>> fecDataHandler(data) {
+    List<List<int>> returnData = [
+      [-1, -1]
+    ];
+    int returnInt = -1;
 
     var messageLength = data[1];
     var messageType = data[2];
@@ -97,11 +100,11 @@ class TacxTrainerControl {
     var dataPageNumber = messageData[0];
 
     if (dataPageNumber == 16) {
-      //returnData = generalDataHandler(messageData);
+      return returnData;
     } else if (dataPageNumber == 25) {
-      returnData = specificTrainerDataHandler(messageData);
+      returnData.add(specificTrainerDataHandler(messageData));
     } else if (dataPageNumber == 71) {
-      //returnData = commandStatusDataHandler(messageData);
+      return returnData;
     }
     return returnData;
   }
@@ -110,7 +113,7 @@ class TacxTrainerControl {
     return "not implemented";
   }
 
-  String specificTrainerDataHandler(messageData) {
+  List<int> specificTrainerDataHandler(messageData) {
     var eventCount = messageData[1];
 
     var instantaneousCadence = messageData[2];
@@ -123,7 +126,7 @@ class TacxTrainerControl {
 
     var instantaneousPower = powerLsb + ((powerMsb & 0xf) << 8);
 
-    return "Current power: $instantaneousPower ... Current cadence: $instantaneousCadence";
+    return [instantaneousPower, instantaneousCadence];
   }
 
   String commandStatusDataHandler(messageData) {

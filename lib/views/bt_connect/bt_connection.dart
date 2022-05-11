@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:entalpitrainer/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:location_permissions/location_permissions.dart';
+import 'package:numberpicker/numberpicker.dart';
 
 import '../../tacx_trainer_control.dart';
 import '../../widgets/text_container_widget.dart';
@@ -31,6 +33,9 @@ class _BTConnectionState extends State<BTConnection> {
   bool _connected = false;
   String _logTexts = "";
   List<String> _receivedData = [];
+
+  int targetPower = 0;
+  int cadence = 0;
   int _numberOfMessagesReceived = 0;
 
   late TacxTrainerControl trainer;
@@ -107,8 +112,12 @@ class _BTConnectionState extends State<BTConnection> {
   void onNewReceivedData(List<int> data) {
     _numberOfMessagesReceived += 1;
     var stringData = trainer.fecDataHandler(data);
-    _receivedData.add("$_numberOfMessagesReceived: , $stringData");
-
+    print(stringData.last[1]);
+    if (stringData.last[0] != -1) {
+      targetPower = stringData.last[0];
+      cadence = stringData.last[1];
+    }
+    print('target power: $targetPower');
     if (_receivedData.length > 5) {
       _receivedData.removeAt(0);
     }
@@ -172,92 +181,177 @@ class _BTConnectionState extends State<BTConnection> {
     });
   }
 
+  int _currentValue = 200;
+
   @override
-  Widget build(BuildContext context) => SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Container(
-                margin: const EdgeInsets.all(12.0),
-                decoration: BoxDecoration(
-                  color: EntalpiColors.offBlack,
-                  borderRadius: BorderRadius.circular(4),
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          Container(
+              margin: const EdgeInsets.all(12.0),
+              decoration: BoxDecoration(
+                color: EntalpiColors.offBlack,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              height: 100,
+              child: ListView.builder(
+                  itemCount: _foundBleUARTDevices.length,
+                  itemBuilder: (context, index) => Card(
+                          child: ListTile(
+                        dense: true,
+                        enabled: !((!_connected && _scanning) ||
+                            (!_scanning && _connected)),
+                        trailing: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: () {
+                            (!_connected && _scanning) ||
+                                    (!_scanning && _connected)
+                                ? () {}
+                                : onConnectDevice(index);
+                          },
+                          child: Container(
+                            width: 100,
+                            height: 48,
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            alignment: Alignment.center,
+                            child: const Icon(Icons.add_link),
+                          ),
+                        ),
+                        leading: const Text(
+                          "Devices found:",
+                          style: TextStyle(color: EntalpiColors.white),
+                        ),
+                        subtitle: Text(_foundBleUARTDevices[index].id),
+                        title:
+                            Text("$index: ${_foundBleUARTDevices[index].name}"),
+                      )))),
+          TextContainerWidget(data: [_logTexts], text: "Status messages:"),
+          ButtonBar(
+            alignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              ElevatedButton(
+                style: buildButtonStyle(),
+                onPressed: !_scanning && !_connected ? _startScan : () {},
+                child: Icon(
+                  Icons.play_arrow,
+                  color: !_scanning && !_connected
+                      ? EntalpiColors.offBlack
+                      : EntalpiColors.offWhite54,
                 ),
-                height: 100,
-                child: ListView.builder(
-                    itemCount: _foundBleUARTDevices.length,
-                    itemBuilder: (context, index) => Card(
-                            child: ListTile(
-                          dense: true,
-                          enabled: !((!_connected && _scanning) ||
-                              (!_scanning && _connected)),
-                          trailing: GestureDetector(
-                            behavior: HitTestBehavior.translucent,
-                            onTap: () {
-                              (!_connected && _scanning) ||
-                                      (!_scanning && _connected)
-                                  ? () {}
-                                  : onConnectDevice(index);
-                            },
-                            child: Container(
-                              width: 100,
-                              height: 48,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 4.0),
-                              alignment: Alignment.center,
-                              child: const Icon(Icons.add_link),
-                            ),
-                          ),
-                          leading: const Text(
-                            "Devices found:",
-                            style: TextStyle(color: EntalpiColors.white),
-                          ),
-                          subtitle: Text(_foundBleUARTDevices[index].id),
-                          title: Text(
-                              "$index: ${_foundBleUARTDevices[index].name}"),
-                        )))),
-            TextContainerWidget(data: [_logTexts], text: "Status messages:"),
-            TextContainerWidget(text: "Received data:", data: _receivedData),
-            ButtonBar(
-              alignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                ElevatedButton(
+              ),
+              ElevatedButton(
                   style: buildButtonStyle(),
-                  onPressed: !_scanning && !_connected ? _startScan : () {},
+                  onPressed: _scanning ? _stopScan : () {},
                   child: Icon(
-                    Icons.play_arrow,
-                    color: !_scanning && !_connected
+                    Icons.stop,
+                    color: _scanning
                         ? EntalpiColors.offBlack
                         : EntalpiColors.offWhite54,
-                  ),
+                  )),
+              ElevatedButton(
+                  style: buildButtonStyle(),
+                  onPressed: _connected ? _disconnect : () {},
+                  child: Icon(
+                    Icons.cancel,
+                    color: _connected
+                        ? EntalpiColors.offBlack
+                        : EntalpiColors.offWhite54,
+                  )),
+            ],
+          ),
+          SizedBox(
+            child: ConectionStatusWidget(
+                scanning: _scanning, connected: _connected),
+          ),
+          NumberPicker(
+            minValue: 0,
+            maxValue: 1500,
+            axis: Axis.horizontal,
+            step: 2,
+            value: _currentValue,
+            selectedTextStyle:
+                const TextStyle(color: EntalpiColors.green, fontSize: 18),
+            onChanged: (value) => setState(() {
+              _currentValue = value;
+            }),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                onPressed: () => setState(() {
+                  final newValue = _currentValue - 100;
+                  _currentValue = newValue;
+                }),
+                child: const Text(
+                  '-100',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: EntalpiColors.offBlack),
                 ),
-                ElevatedButton(
-                    style: buildButtonStyle(),
-                    onPressed: _scanning ? _stopScan : () {},
-                    child: Icon(
-                      Icons.stop,
-                      color: _scanning
-                          ? EntalpiColors.offBlack
-                          : EntalpiColors.offWhite54,
-                    )),
-                ElevatedButton(
-                    style: buildButtonStyle(),
-                    onPressed: _connected ? _disconnect : () {},
-                    child: Icon(
-                      Icons.cancel,
-                      color: _connected
-                          ? EntalpiColors.offBlack
-                          : EntalpiColors.offWhite54,
-                    )),
-              ],
-            ),
-            SizedBox(
-              height: 35,
-              child: ConectionStatusWidget(
-                  scanning: _scanning, connected: _connected),
-            ),
-          ],
-        ),
-      );
+                style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all(EntalpiColors.green),
+                ),
+              ),
+              const SizedBox(
+                width: 20,
+              ),
+              //power set to: $_currentValue'
+              TextButton(
+                onPressed: () => setState(() {
+                  trainer.setTargetPower(_currentValue);
+                }),
+                child: const Text(
+                  "Set target power",
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: EntalpiColors.offBlack),
+                ),
+                style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all(EntalpiColors.green),
+                ),
+              ),
+
+              const SizedBox(
+                width: 20,
+              ),
+              TextButton(
+                onPressed: () => setState(() {
+                  final newValue = _currentValue + 100;
+                  _currentValue = newValue;
+                }),
+                child: const Text(
+                  '+100',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: EntalpiColors.offBlack),
+                ),
+                style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all(EntalpiColors.green),
+                ), //'Target,
+              ),
+              //'Target power set to: $_currentValue'
+            ],
+          ),
+          Text(
+            '\nCurrent power: \n           $targetPower',
+            style: TextStyle(fontSize: 25),
+          ),
+          Text(
+            '\nCurrent cadence: \n             $cadence',
+            style: TextStyle(fontSize: 25),
+          ),
+        ],
+      ),
+    );
+  }
 }
