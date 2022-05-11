@@ -17,14 +17,6 @@ class BTConnection extends StatefulWidget {
   _BTConnectionState createState() => _BTConnectionState();
 }
 
-// List<DiscoveredDevice> _foundBleUARTDevices = [];
-// late StreamSubscription<DiscoveredDevice> _scanStream;
-// late StreamSubscription<ConnectionStateUpdate> _connection;
-// List<String> dataLog = [];
-// bool _scanning = false;
-// bool _connected = false;
-// String _logTexts = "";
-
 class _BTConnectionState extends State<BTConnection> {
   FlutterReactiveBle flutterReactiveBle = FlutterReactiveBle();
   List<DiscoveredDevice> _foundBleUARTDevices = [];
