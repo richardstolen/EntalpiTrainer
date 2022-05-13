@@ -1,12 +1,16 @@
+import 'dart:async';
+
 import 'package:entalpitrainer/constants.dart';
 import 'package:entalpitrainer/widgets/bottom_navigation_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 
-import '../../tacx_trainer_control.dart';
+import '../../bt.dart';
+import '../../widgets/text_container_widget.dart';
 
 class SimpleWorkoutView extends StatefulWidget {
-  const SimpleWorkoutView({Key? key}) : super(key: key);
+  BT bt;
+  SimpleWorkoutView({Key? key, required this.bt}) : super(key: key);
 
   @override
   State<SimpleWorkoutView> createState() => _SimpleWorkoutViewState();
@@ -14,124 +18,178 @@ class SimpleWorkoutView extends StatefulWidget {
 
 class _SimpleWorkoutViewState extends State<SimpleWorkoutView> {
   int _currentValue = 200;
-  late TacxTrainerControl trainer;
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        body: Column(
-          children: [
-            NumberPicker(
-              minValue: 0,
-              maxValue: 1500,
-              axis: Axis.horizontal,
-              step: 2,
-              value: _currentValue,
-              selectedTextStyle:
-                  const TextStyle(color: EntalpiColors.green, fontSize: 18),
-              onChanged: (value) => setState(() {
-                _currentValue = value;
-              }),
+    /*
+    CHANGE !widget.bt.connected TO widget.bt.connected
+    in IF statement
+    */
+    if (widget.bt.connected) {
+      widget.bt.controller.stream.listen((data) {
+        widget.bt.onNewReceivedData(data);
+        setState(() {});
+      });
+      return Scaffold(
+        body: SafeArea(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [EntalpiColors.green, EntalpiColors.deepPurple],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Column(
               children: [
-                TextButton(
-                  onPressed: () => setState(() {
-                    final newValue = _currentValue - 100;
-                    _currentValue = newValue;
+                NumberPicker(
+                  itemHeight: 100,
+                  minValue: 0,
+                  maxValue: 1500,
+                  axis: Axis.horizontal,
+                  step: 2,
+                  value: _currentValue,
+                  selectedTextStyle: const TextStyle(
+                      color: EntalpiColors.offBlack, fontSize: 30),
+                  onChanged: (value) => setState(() {
+                    _currentValue = value;
                   }),
-                  child: const Text(
-                    '-100',
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: EntalpiColors.offBlack),
-                  ),
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all(EntalpiColors.green),
-                  ),
                 ),
-                const SizedBox(
-                  width: 20,
-                ),
-                //power set to: $_currentValue'
-                TextButton(
-                  onPressed: () => setState(() {
-                    trainer.setTargetPower(_currentValue);
-                  }),
-                  child: const Text(
-                    "Set target power",
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: EntalpiColors.offBlack),
-                  ),
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all(EntalpiColors.green),
-                  ),
-                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: () => setState(() {
+                        final newValue = _currentValue - 100;
+                        _currentValue = newValue;
+                      }),
+                      child: const Text(
+                        '-100',
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: EntalpiColors.offBlack),
+                      ),
+                      style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all(EntalpiColors.green),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                    ),
+                    //power set to: $_currentValue'
+                    TextButton(
+                      onPressed: () => setState(() {
+                        widget.bt.trainer.setTargetPower(_currentValue);
+                      }),
+                      child: const Text(
+                        "Set target power",
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: EntalpiColors.offBlack),
+                      ),
+                      style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all(EntalpiColors.green),
+                      ),
+                    ),
 
-                const SizedBox(
-                  width: 20,
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() {
+                        final newValue = _currentValue + 100;
+                        _currentValue = newValue;
+                      }),
+                      child: const Text(
+                        '+100',
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: EntalpiColors.offBlack),
+                      ),
+                      style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all(EntalpiColors.green),
+                      ),
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () => setState(() {
-                    final newValue = _currentValue + 100;
-                    _currentValue = newValue;
-                  }),
-                  child: const Text(
-                    '+100',
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: EntalpiColors.offBlack),
-                  ),
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all(EntalpiColors.green),
-                  ), //'Target,
+                const Padding(padding: EdgeInsets.all(20)),
+                Column(
+                  children: [
+                    const Text("Intervall duraton:"),
+                    Text('${widget.bt.trainer.intervalTime.elapsed.inSeconds}',
+                        style: const TextStyle(fontSize: 50)),
+                  ],
                 ),
-                //'Target power set to: $_currentValue'
+                const Padding(padding: EdgeInsets.all(50)),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Column(
+                        children: [
+                          const Text("Target power:"),
+                          Text('${widget.bt.trainer.currentTargetPower}',
+                              style: const TextStyle(fontSize: 50)),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          const Text("Cadence:"),
+                          Text('${widget.bt.trainer.currentCadence}',
+                              style: const TextStyle(fontSize: 50)),
+                        ],
+                      )
+                    ]),
+                const Padding(padding: EdgeInsets.all(40)),
+                Column(
+                  children: [
+                    const Text("Elapsed time:"),
+                    Text('${widget.bt.trainer.elapsedTime.elapsed.inSeconds}',
+                        style: const TextStyle(fontSize: 50)),
+                  ],
+                ),
               ],
             ),
-          ],
+          ),
         ),
-        bottomNavigationBar: const BottomNavBar(),
-      ),
-    );
+        bottomNavigationBar: BottomNavBar(
+          bt: widget.bt,
+        ),
+      );
+    } else {
+      return Scaffold(
+        body: SafeArea(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [EntalpiColors.green, EntalpiColors.deepPurple],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight),
+            ),
+            child: Column(children: [
+              const Padding(padding: EdgeInsets.all(40)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "You are not connected to a bike",
+                    style: TextStyle(fontSize: 25),
+                  ),
+                ],
+              )
+            ]),
+          ),
+        ),
+        bottomNavigationBar: BottomNavBar(
+          bt: widget.bt,
+        ),
+      );
+    }
   }
 }
-
-//
-// const Text("Set target power:"),
-// Container(
-// margin: const EdgeInsets.all(3.0),
-// padding: const EdgeInsets.all(8.0),
-// width: 400,
-// decoration: BoxDecoration(
-// borderRadius: BorderRadius.circular(10),
-// border: Border.all(color: Colors.blue, width: 2)),
-// child: Row(children: <Widget>[
-// Expanded(
-// child: TextField(
-// enabled: _connected,
-// controller: _dataToSendText,
-// decoration: const InputDecoration(
-// border: InputBorder.none, hintText: 'Enter a number'),
-// )),
-// ElevatedButton(
-// child: Icon(
-// Icons.send,
-// color: _connected ? Colors.white : Colors.blue,
-// ),
-// onPressed: _connected
-// ? () {
-// trainer.setTargetPower(
-// int.parse(_dataToSendText.text));
-// }
-//     : () {}),
-// ])),

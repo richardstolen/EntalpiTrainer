@@ -1,10 +1,13 @@
+import 'package:entalpitrainer/bt.dart';
 import 'package:flutter/material.dart';
 
 import '../constants.dart';
 
 class BottomNavBar extends StatelessWidget {
-  const BottomNavBar({
+  final BT bt;
+  BottomNavBar({
     Key? key,
+    required this.bt,
   }) : super(key: key);
 
   @override
@@ -22,7 +25,8 @@ class BottomNavBar extends StatelessWidget {
             Expanded(
               child: IconButton(
                   padding: const EdgeInsets.symmetric(vertical: 2),
-                  onPressed: () => Navigator.of(context).pushNamed('/'),
+                  onPressed: () =>
+                      Navigator.of(context).pushNamed('/', arguments: bt),
                   icon: Column(
                     children: const [
                       Icon(
@@ -41,7 +45,8 @@ class BottomNavBar extends StatelessWidget {
             Expanded(
               child: IconButton(
                   padding: const EdgeInsets.symmetric(vertical: 2),
-                  onPressed: () => Navigator.of(context).pushNamed('/workout'),
+                  onPressed: () => Navigator.of(context)
+                      .pushNamed('/workout', arguments: bt),
                   icon: Column(
                     children: const [
                       Icon(

@@ -16,17 +16,19 @@ class ConectionStatusWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (_scanning)
-          const Text("Scanning: Scanning")
-        else
-          const Text("Scanning: Idle"),
-        if (_connected)
-          const Text("Connected")
-        else
-          const Text("disconnected."),
-      ],
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          if (_scanning)
+            const Text("Scanning: Scanning")
+          else
+            const Text("Scanning: Idle"),
+          if (_connected)
+            const Text("Connected")
+          else
+            const Text("disconnected."),
+        ],
+      ),
     );
   }
 }

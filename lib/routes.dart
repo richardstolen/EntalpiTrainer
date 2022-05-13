@@ -1,3 +1,4 @@
+import 'package:entalpitrainer/bt.dart';
 import 'package:entalpitrainer/views/bt_connect/bt_connect_view.dart';
 import 'package:entalpitrainer/views/simple_workout/simple_workout_view.dart';
 import 'package:flutter/material.dart';
@@ -5,15 +6,17 @@ import 'package:flutter/material.dart';
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     // use if passing arguments in nav: final args = settings.arguments;
-
+    final args = settings.arguments as BT;
     switch (settings.name) {
       case '/':
         return MaterialPageRoute(
-          builder: (_) => const BTConnectView(),
+          builder: (_) => BTConnectView(
+            bt: args,
+          ),
         );
       case '/workout':
         return MaterialPageRoute(
-          builder: (_) => const SimpleWorkoutView(),
+          builder: (_) => SimpleWorkoutView(bt: args),
         );
       // If args is not of the correct type, return an error page.
       // You can also throw an exception while in development.

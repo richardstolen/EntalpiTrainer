@@ -11,6 +11,10 @@ class TacxTrainerControl {
   late FlutterReactiveBle _client;
   late QualifiedCharacteristic _rxCharacteristic;
 
+  int currentTargetPower = 0;
+  int currentCadence = 0;
+  final elapsedTime = Stopwatch();
+  final intervalTime = Stopwatch();
   set rxCharacteristic(value) => _rxCharacteristic = value;
 
   get getRxCharacteristic => _rxCharacteristic;
@@ -85,6 +89,16 @@ class TacxTrainerControl {
     writeValue.add(byteData.getInt8(0));
     writeValue.add(byteData.getInt8(1));
     sendFecCmd(writeValue);
+
+    if (!elapsedTime.isRunning) {
+      elapsedTime.start();
+    }
+
+    if (!intervalTime.isRunning) {
+      intervalTime.start();
+    } else {
+      intervalTime.reset();
+    }
   }
 
   String fecDataHandler(data) {
@@ -122,6 +136,8 @@ class TacxTrainerControl {
     var powerMsb = messageData[6];
 
     var instantaneousPower = powerLsb + ((powerMsb & 0xf) << 8);
+    currentTargetPower = instantaneousPower;
+    currentCadence = instantaneousCadence;
 
     return "Current power: $instantaneousPower ... Current cadence: $instantaneousCadence";
   }

@@ -1,6 +1,7 @@
-import 'dart:async';
+/*import 'dart:async';
 import 'dart:io';
 
+import 'package:entalpitrainer/BT.dart';
 import 'package:entalpitrainer/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
@@ -26,6 +27,7 @@ class BTConnection extends StatefulWidget {
 // String _logTexts = "";
 
 class _BTConnectionState extends State<BTConnection> {
+  /*
   FlutterReactiveBle flutterReactiveBle = FlutterReactiveBle();
   List<DiscoveredDevice> _foundBleUARTDevices = [];
   late StreamSubscription<DiscoveredDevice> _scanStream;
@@ -42,11 +44,13 @@ class _BTConnectionState extends State<BTConnection> {
   int _numberOfMessagesReceived = 0;
 
   late TacxTrainerControl trainer;
+*/
+  BT bt = BT();
 
   void refreshScreen() {
     setState(() {});
   }
-
+  /*
   Future<void> showNoPermissionDialog() async => showDialog<void>(
         context: context,
         barrierDismissible: false, // user must tap button!
@@ -179,6 +183,7 @@ class _BTConnectionState extends State<BTConnection> {
       refreshScreen();
     });
   }
+*/
 
   @override
   Widget build(BuildContext context) => SingleChildScrollView(
@@ -193,20 +198,29 @@ class _BTConnectionState extends State<BTConnection> {
                 ),
                 height: 100,
                 child: ListView.builder(
-                    itemCount: _foundBleUARTDevices.length,
+                    itemCount: bt.foundBleUARTDevices.length,
                     itemBuilder: (context, index) => Card(
                             child: ListTile(
                           dense: true,
-                          enabled: !((!_connected && _scanning) ||
-                              (!_scanning && _connected)),
+                          enabled: !((!bt.connected && bt.scanning) ||
+                              (!bt.scanning && bt.connected)),
                           trailing: GestureDetector(
                             behavior: HitTestBehavior.translucent,
                             onTap: () {
-                              (!_connected && _scanning) ||
-                                      (!_scanning && _connected)
-                                  ? () {}
-                                  : onConnectDevice(index);
+                              if ((!bt.connected && bt.scanning) ||
+                                  (!bt.scanning && bt.connected)) {
+                                () {};
+                              } else {
+                                bt.onConnectDevice(index);
+                                refreshScreen();
+                              }
                             },
+                            /*() {
+                              (!bt.connected && bt.scanning) ||
+                                      (!bt.scanning && bt.connected)
+                                  ? () {}
+                                  : bt.onConnectDevice(index);
+                            },*/
                             child: Container(
                               width: 100,
                               height: 48,
@@ -220,41 +234,68 @@ class _BTConnectionState extends State<BTConnection> {
                             "Devices found:",
                             style: TextStyle(color: EntalpiColors.white),
                           ),
-                          subtitle: Text(_foundBleUARTDevices[index].id),
+                          subtitle: Text(bt.foundBleUARTDevices[index].id),
                           title: Text(
-                              "$index: ${_foundBleUARTDevices[index].name}"),
+                              "$index: ${bt.foundBleUARTDevices[index].name}"),
                         )))),
-            TextContainerWidget(data: [_logTexts], text: "Status messages:"),
-            TextContainerWidget(text: "Received data:", data: _receivedData),
+            TextContainerWidget(data: [bt.logTexts], text: "Status messages:"),
+            TextContainerWidget(text: "Received data:", data: bt.receivedData),
             ButtonBar(
               alignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
               children: [
                 ElevatedButton(
                   style: buildButtonStyle(),
-                  onPressed: !_scanning && !_connected ? _startScan : () {},
+                  onPressed: () {
+                    if (!bt.scanning && !bt.connected) {
+                      bt.startScan();
+                      refreshScreen();
+                    } else {
+                      () {};
+                    }
+                  },
+                  //!bt.scanning && !bt.connected ? bt.startScan : () {},
+
                   child: Icon(
                     Icons.play_arrow,
-                    color: !_scanning && !_connected
+                    color: !bt.scanning && !bt.connected
                         ? EntalpiColors.offBlack
                         : EntalpiColors.offWhite54,
                   ),
                 ),
                 ElevatedButton(
                     style: buildButtonStyle(),
-                    onPressed: _scanning ? _stopScan : () {},
+                    onPressed: () {
+                      if (bt.scanning) {
+                        bt.stopScan();
+                        refreshScreen();
+                      } else {
+                        () {};
+                      }
+                    },
+
+                    //bt.scanning ? bt.stopScan : () {},
                     child: Icon(
                       Icons.stop,
-                      color: _scanning
+                      color: bt.scanning
                           ? EntalpiColors.offBlack
                           : EntalpiColors.offWhite54,
                     )),
                 ElevatedButton(
                     style: buildButtonStyle(),
-                    onPressed: _connected ? _disconnect : () {},
+                    onPressed: () {
+                      if (bt.connected) {
+                        bt.disconnect();
+                        refreshScreen();
+                      } else {
+                        () {};
+                      }
+                    },
+
+                    //bt.connected ? bt.disconnect : () {},
                     child: Icon(
                       Icons.cancel,
-                      color: _connected
+                      color: bt.connected
                           ? EntalpiColors.offBlack
                           : EntalpiColors.offWhite54,
                     )),
@@ -263,9 +304,10 @@ class _BTConnectionState extends State<BTConnection> {
             SizedBox(
               height: 35,
               child: ConectionStatusWidget(
-                  scanning: _scanning, connected: _connected),
+                  scanning: bt.scanning, connected: bt.connected),
             ),
           ],
         ),
       );
 }
+*/
