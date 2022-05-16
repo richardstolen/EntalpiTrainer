@@ -1,4 +1,3 @@
-import 'package:entalpitrainer/views/bt_connect/bt_connection.dart';
 import 'package:entalpitrainer/widgets/bottom_navigation_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:entalpitrainer/bt.dart';

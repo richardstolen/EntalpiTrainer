@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:entalpitrainer/tacx_trainer_control.dart';
 import 'package:entalpitrainer/views/bt_connect/bt_connect_view.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'constants.dart';
 

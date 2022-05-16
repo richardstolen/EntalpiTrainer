@@ -122,25 +122,28 @@ class _SimpleWorkoutViewState extends State<SimpleWorkoutView> {
                 const Padding(padding: EdgeInsets.all(20)),
                 Column(
                   children: [
-                    const Text("Intervall duraton:"),
+                    const Text("Intervall duration:",
+                        style: TextStyle(fontSize: 20)),
                     Text('${widget.bt.trainer.intervalTime.elapsed.inSeconds}',
                         style: const TextStyle(fontSize: 50)),
                   ],
                 ),
-                const Padding(padding: EdgeInsets.all(50)),
+                const Padding(padding: EdgeInsets.all(40)),
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Column(
                         children: [
-                          const Text("Target power:"),
+                          const Text("Target power:",
+                              style: TextStyle(fontSize: 20)),
                           Text('${widget.bt.trainer.currentTargetPower}',
                               style: const TextStyle(fontSize: 50)),
                         ],
                       ),
                       Column(
                         children: [
-                          const Text("Cadence:"),
+                          const Text("Cadence:",
+                              style: TextStyle(fontSize: 20)),
                           Text('${widget.bt.trainer.currentCadence}',
                               style: const TextStyle(fontSize: 50)),
                         ],
@@ -149,7 +152,10 @@ class _SimpleWorkoutViewState extends State<SimpleWorkoutView> {
                 const Padding(padding: EdgeInsets.all(40)),
                 Column(
                   children: [
-                    const Text("Elapsed time:"),
+                    const Text(
+                      "Elapsed time:",
+                      style: TextStyle(fontSize: 20),
+                    ),
                     Text('${widget.bt.trainer.elapsedTime.elapsed.inSeconds}',
                         style: const TextStyle(fontSize: 50)),
                   ],
@@ -176,7 +182,7 @@ class _SimpleWorkoutViewState extends State<SimpleWorkoutView> {
               const Padding(padding: EdgeInsets.all(40)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+                children: const [
                   Text(
                     "You are not connected to a bike",
                     style: TextStyle(fontSize: 25),
