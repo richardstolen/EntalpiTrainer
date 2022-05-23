@@ -6,17 +6,18 @@ import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'constants.dart';
 
 class BT {
-  String text = "asdf";
-
   FlutterReactiveBle flutterReactiveBle = FlutterReactiveBle();
   List<DiscoveredDevice> foundBleUARTDevices = [];
-  late StreamSubscription<DiscoveredDevice> _scanStream;
+  StreamController<String> deviceController =
+      StreamController<String>.broadcast();
+  late StreamSubscription<DiscoveredDevice> scanStream;
   late Stream<ConnectionStateUpdate> _currentConnectionStream;
   late StreamSubscription<ConnectionStateUpdate> _connection;
+
   late QualifiedCharacteristic txCharacteristic;
   late QualifiedCharacteristic _rxCharacteristic;
 
-  StreamController<List<int>> controller =
+  StreamController<List<int>> dataController =
       StreamController<List<int>>.broadcast();
   late Stream<List<int>> receivedDataStream;
 
@@ -28,15 +29,19 @@ class BT {
   List<String> receivedData = [];
   int _numberOfMessagesReceived = 0;
 
+  String deviceId = "";
+  String deviceName = "";
+
   late TacxTrainerControl trainer;
 
   void startScan() {
     foundBleUARTDevices = [];
     scanning = true;
-    _scanStream = flutterReactiveBle
+    scanStream = flutterReactiveBle
         .scanForDevices(withServices: [uartUUID]).listen((device) {
       if (foundBleUARTDevices.every((element) => element.id != device.id)) {
         foundBleUARTDevices.add(device);
+        deviceController.add(device.toString());
       }
     }, onError: (Object error) {
       logTexts = "${logTexts}ERROR while scanning:$error \n";
@@ -44,7 +49,7 @@ class BT {
   }
 
   void stopScan() async {
-    await _scanStream.cancel();
+    await scanStream.cancel();
     scanning = false;
   }
 
@@ -69,6 +74,7 @@ class BT {
       prescanDuration: const Duration(seconds: 1),
       withServices: [uartUUID, uartRX, uartTX],
     );
+    deviceName = foundBleUARTDevices[index].name;
     logTexts = "";
     _connection = _currentConnectionStream.listen((event) {
       var id = event.deviceId.toString();
@@ -76,12 +82,15 @@ class BT {
         case DeviceConnectionState.connecting:
           {
             logTexts = "${logTexts}Connecting to $id\n";
+            deviceController.add("${logTexts}Connecting to $id\n");
+            deviceId = id;
             break;
           }
         case DeviceConnectionState.connected:
           {
             connected = true;
             logTexts = "${logTexts}Connected to $id\n";
+            deviceController.add("${logTexts}Connected to $id\n");
             _numberOfMessagesReceived = 0;
             receivedData = [];
             txCharacteristic = QualifiedCharacteristic(
@@ -90,7 +99,7 @@ class BT {
                 deviceId: event.deviceId);
             receivedDataStream =
                 flutterReactiveBle.subscribeToCharacteristic(txCharacteristic);
-            controller.addStream(receivedDataStream);
+            dataController.addStream(receivedDataStream);
             /*
             receivedDataStream.listen((data) {
               onNewReceivedData(data);

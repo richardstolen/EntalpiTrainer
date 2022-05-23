@@ -4,7 +4,6 @@ import 'package:entalpitrainer/bt.dart';
 import 'package:entalpitrainer/constants.dart';
 
 import '../../constants.dart';
-import '../../widgets/text_container_widget.dart';
 import 'connection_widgets.dart';
 
 // ignore: must_be_immutable
@@ -26,6 +25,9 @@ class BTConnectViewState extends State<BTConnectView> {
     if (widget.bt == null) {
       widget.bt = BT();
     }
+    widget.bt.deviceController.stream.listen((data) {
+      setState(() {});
+    });
 
     return Scaffold(
       body: SafeArea(
@@ -39,6 +41,61 @@ class BTConnectViewState extends State<BTConnectView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
+              const Padding(padding: EdgeInsets.all(10)),
+              Text(
+                !widget.bt.connected ? "Disconnected" : "Connected",
+                style:
+                    TextStyle(fontSize: 25, color: EntalpiColors.almostWhite),
+              ),
+              const Padding(padding: EdgeInsets.all(5)),
+              ButtonBar(
+                alignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  ElevatedButton(
+                    style: buildButtonStyle(),
+                    onPressed: () {
+                      if (!widget.bt.scanning && !widget.bt.connected) {
+                        widget.bt.startScan();
+                        refreshScreen();
+                      } else {
+                        () {};
+                      }
+                    },
+                    child: Icon(
+                      Icons.play_arrow,
+                      color: !widget.bt.scanning && !widget.bt.connected
+                          ? EntalpiColors.offBlack
+                          : EntalpiColors.offWhite54,
+                      size: 50,
+                    ),
+                  ),
+                  ElevatedButton(
+                      style: buildButtonStyle(),
+                      onPressed: () {
+                        if (widget.bt.scanning) {
+                          widget.bt.stopScan();
+                          refreshScreen();
+                        } else {
+                          () {};
+                        }
+                      },
+                      child: Icon(
+                        Icons.stop,
+                        color: widget.bt.scanning
+                            ? EntalpiColors.offBlack
+                            : EntalpiColors.offWhite54,
+                        size: 50,
+                      )),
+                ],
+              ),
+              SizedBox(
+                height: 35,
+                child: Text(
+                  widget.bt.scanning ? "Scanning" : "",
+                  style: TextStyle(fontSize: 25),
+                ),
+              ),
               Container(
                   margin: const EdgeInsets.all(12.0),
                   decoration: BoxDecoration(
@@ -84,69 +141,26 @@ class BTConnectViewState extends State<BTConnectView> {
                             title: Text(
                                 "$index: ${widget.bt.foundBleUARTDevices[index].name}"),
                           )))),
-              TextContainerWidget(
-                  data: [widget.bt.logTexts], text: "Status messages:"),
-              ButtonBar(
-                alignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  ElevatedButton(
-                    style: buildButtonStyle(),
-                    onPressed: () {
-                      if (!widget.bt.scanning && !widget.bt.connected) {
-                        widget.bt.startScan();
-                        refreshScreen();
-                      } else {
-                        () {};
-                      }
-                    },
-                    child: Icon(
-                      Icons.play_arrow,
-                      color: !widget.bt.scanning && !widget.bt.connected
-                          ? EntalpiColors.offBlack
-                          : EntalpiColors.offWhite54,
-                    ),
-                  ),
-                  ElevatedButton(
-                      style: buildButtonStyle(),
-                      onPressed: () {
-                        if (widget.bt.scanning) {
-                          widget.bt.stopScan();
-                          refreshScreen();
-                        } else {
-                          () {};
-                        }
-                      },
-                      child: Icon(
-                        Icons.stop,
-                        color: widget.bt.scanning
-                            ? EntalpiColors.offBlack
-                            : EntalpiColors.offWhite54,
-                      )),
-                  ElevatedButton(
-                      style: buildButtonStyle(),
-                      onPressed: () {
-                        if (widget.bt.connected) {
-                          widget.bt.disconnect();
-                          refreshScreen();
-                        } else {
-                          () {};
-                        }
-                      },
-                      child: Icon(
-                        Icons.cancel,
-                        color: widget.bt.connected
-                            ? EntalpiColors.offBlack
-                            : EntalpiColors.offWhite54,
-                      )),
-                ],
-              ),
-              SizedBox(
-                height: 35,
-                child: ConectionStatusWidget(
-                    scanning: widget.bt.scanning,
-                    connected: widget.bt.connected),
-              ),
+              Text(widget.bt.connected
+                  ? "Connected to ${widget.bt.deviceName}"
+                  : ""),
+              const Padding(padding: EdgeInsets.all(100)),
+              ElevatedButton(
+                  style: buildButtonStyle(),
+                  onPressed: () {
+                    if (widget.bt.connected) {
+                      widget.bt.disconnect();
+                      refreshScreen();
+                    } else {
+                      () {};
+                    }
+                  },
+                  child: Text("Disconnect",
+                      style: TextStyle(
+                          color: widget.bt.connected
+                              ? EntalpiColors.offBlack
+                              : EntalpiColors.offWhite54,
+                          fontSize: 15))),
             ],
           ),
         ),

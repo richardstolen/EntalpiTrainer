@@ -26,7 +26,7 @@ class _SimpleWorkoutViewState extends State<SimpleWorkoutView> {
     in IF statement
     */
     if (widget.bt.connected) {
-      widget.bt.controller.stream.listen((data) {
+      widget.bt.dataController.stream.listen((data) {
         widget.bt.onNewReceivedData(data);
         setState(() {});
       });

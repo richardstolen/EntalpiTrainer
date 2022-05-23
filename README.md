@@ -1,6 +1,6 @@
 # entalpitrainer
 
-A new Flutter project.
+Entalpitrainer, a application part of a bachelor thesis.
 
 ## Getting Started
 
