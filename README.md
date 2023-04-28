@@ -1,16 +1,26 @@
-# entalpitrainer
+<div align="center">
+    <h1>Entalpi Trainer: Bachelor's thesis</h1>
+    <img src="https://media.licdn.com/dms/image/C4E0BAQHBpNponiyzKg/company-logo_200_200/0/1655298606348?e=2147483647&v=beta&t=F1tNOFom9FcJahwIiz52bRiCAu_pUvFl6SvUg1VUbOc" width="128" alt="logo">
+</div>
 
-A new Flutter project.
+[![license](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
-## Getting Started
+## Background information
 
-This project is a starting point for a Flutter application.
+Repository containing source code for the mobile application Entalpitrainer that i created as part of my Bachelor's thesis.
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+## Maintainers
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+[@Richard Stølen](https://gitlab.com/richardstolen)
+
+## Contributing
+
+PRs accepted.
+
+Small note: If editing the Readme, please conform to the [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
+
+## License
+
+[MIT](../LICENSE) © Richard Stølen
